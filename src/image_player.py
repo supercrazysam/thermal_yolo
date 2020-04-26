@@ -19,7 +19,8 @@ class image_converter:
         self.bridge = CvBridge()
 
         #self.camera = cv2.VideoCapture(0)
-        self.image_list = glob.glob("/home/sam/Downloads/FLIR_ADAS_1_3/train/Annotated_thermal_8_bit/*.jpeg")
+        #self.image_list = glob.glob("/home/sam/Downloads/FLIR_ADAS_1_3/train/Annotated_thermal_8_bit/*.jpeg")
+        self.image_list = glob.glob("/root/Annotated_thermal_8_bit/*.jpeg")
     
 
 
