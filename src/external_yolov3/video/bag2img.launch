@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="rosbag" type="play" name="rosbag" required="true" args="/home/big/proj/2020-01-31-19-28-34.bag"/> 
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" required="true" output="screen">
+    <param name="sec_per_frame" value="0.1"/>
+    <param name="filename_format" value="frame%05d.jpg"/>
+    <remap from="image" to="/blended/image"/>
+  </node>
+</launch>
+
