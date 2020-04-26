@@ -29,7 +29,7 @@ class image_converter:
         try:
             for image_file in self.image_list:
                 image = cv2.imread(image_file)
-                print(image)
+                #print(image)
                 try:
                     self.image_pub.publish(self.bridge.cv2_to_imgmsg(image, "bgr8"))
                 except CvBridgeError as e:
