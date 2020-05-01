@@ -24,7 +24,6 @@ import cv2
 import numpy as np
 
 import external_yolov3.darknet.darknet as darknet
-from tools import generate_detections as gdet
 
 warnings.filterwarnings('ignore')
 
@@ -37,12 +36,6 @@ max_cosine_distance = 0.3
 nn_budget = None
 nms_max_overlap = 1.0
 
-# deep_sort 
-model_filename = '/home/big/Music/sam_test/src/yolo_tracker/src/model_data/mars-small128.pb'
-encoder = gdet.create_box_encoder(model_filename,batch_size=1)
-    
-metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-tracker = Tracker(metric ,max_iou_distance=0.1, max_age=30, n_init=3)
 
 ######## FAST YOLO wrapper
 import os
@@ -197,24 +190,11 @@ class yolo_tracker(object):
             print("time for inference =>"+str(time.time()-step1))
             #print(darknet.network_width(netMain),darknet.network_height(netMain)) #608 #608
             # print("box_num",len(boxs))
-            features = encoder(self.show,boxs)
             
-            # score to 1.0 here).
-            detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
-            
-            # Run non-maxima suppression.
-            boxes = np.array([d.tlwh for d in detections])
-            scores = np.array([d.confidence for d in detections])
-            indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
-            detections = [detections[i] for i in indices]
-            
-            for track in tracker.tracks:
-                if not track.is_confirmed() or track.time_since_update > 1:
-                    continue
+            for bbox in boxs:
                 
                 self.posid_array = Path()
-                
-                bbox = track.to_tlbr()
+            
                 try:
                     cv2.rectangle(self.show, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
                 except ValueError:
