@@ -25,13 +25,6 @@ import numpy as np
 
 import external_yolov3.darknet.darknet as darknet
 
-from deep_sort import preprocessing
-from deep_sort import nn_matching
-from deep_sort.detection import Detection
-from deep_sort.tracker import Tracker
-from tools import generate_detections as gdet
-from deep_sort.detection import Detection as ddet
-
 warnings.filterwarnings('ignore')
 
 width = 640 #1280
@@ -42,8 +35,6 @@ height= 512 #720
 max_cosine_distance = 0.3
 nn_budget = None
 nms_max_overlap = 1.0
-
-model_filename = '/home/sam/catkin_ws/src/thermal_yolo/src/thermal_yolo/src/mars-small128.pb'
 
 
 ######## FAST YOLO wrapper
@@ -114,16 +105,11 @@ yolo_filter_size = 416 #416 #608
 
 class yolo_tracker(object):
     def __init__(self):
-                self.encoder = gdet.create_box_encoder(model_filename,batch_size=1)
-                
                 node_name = "yolo_tracker"
                 self.node_name = node_name
                 rospy.init_node(node_name)
                 rospy.loginfo("Starting node " + str(node_name))
                 rospy.on_shutdown(self.cleanup)
-
-
-                
 
                 self.image_sub = rospy.Subscriber("/thermal_yolo/image", Image, self.image_callback, queue_size=1)
                 self.track_pub = rospy.Publisher("/thermal_yolo/tracked", Image, queue_size=1)
@@ -191,6 +177,7 @@ class yolo_tracker(object):
 
             self.fps_count += 1
             self.frame_count += 1
+
 ##            boxs = xyxy_to_xywh(transformed)#.astype(np.uint8)
 ##
             
@@ -201,39 +188,36 @@ class yolo_tracker(object):
             boxs[:,1] = (boxs[:,1] /yolo_filter_size) * height  - boxs[:,3]/2#y
             
             print("time for inference =>"+str(time.time()-step1))
+            #print(darknet.network_width(netMain),darknet.network_height(netMain)) #608 #608
+            # print("box_num",len(boxs))
             
-            features = self.encoder(self.show,boxs)
-            
-            # score to 1.0 here).
-            detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
-            
-            # Run non-maxima suppression.
-            boxes = np.array([d.tlwh for d in detections])
-            scores = np.array([d.confidence for d in detections])
-            indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
-            detections = [detections[i] for i in indices]
-            
-            # Call the tracker
-
-            bboxs = [boxes[i] for i in indices]
-            
-            for bbox in bboxs:
-
-                self.posid_array = Path()
+            for bbox in boxs:
                 
-                bbox = track.to_tlbr()
+                self.posid_array = Path()
+            
                 try:
                     cv2.rectangle(self.show, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
                 except ValueError:
                     break
-  
+                #cv2.putText(self.show, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
+
+
+            # 显示实时FPS值
+            if (time.time() - self.start_time) > self.fps_interval:
+                # 计算这个interval过程中的帧数，若interval为1秒，则为FPS
+                self.realtime_fps = self.fps_count / (time.time() - self.start_time)
+                self.fps_count = 0  # 帧数清零
+                self.start_time = time.time()
+            fps_label = "FPS:"+str(self.realtime_fps)
+            cv2.putText(self.show, fps_label, (width-160, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+
 
             # 显示目前的运行时长及总帧数
             if self.frame_count == 1:
                 self.run_timer = time.time()
             run_time = time.time() - self.run_timer
             time_frame_label = "Frame:"+str(self.frame_count)
-            self.posid_pub.publish(Int32(data=len(bboxs)))
+            self.posid_pub.publish(Int32(data=len(boxs)))
             self.track_pub.publish(self.bridge.cv2_to_imgmsg(self.show, "bgr8"))
 
 
