@@ -114,11 +114,16 @@ yolo_filter_size = 416 #416 #608
 
 class yolo_tracker(object):
     def __init__(self):
+                self.encoder = gdet.create_box_encoder(model_filename,batch_size=1)
+                
                 node_name = "yolo_tracker"
                 self.node_name = node_name
                 rospy.init_node(node_name)
                 rospy.loginfo("Starting node " + str(node_name))
                 rospy.on_shutdown(self.cleanup)
+
+
+                
 
                 self.image_sub = rospy.Subscriber("/thermal_yolo/image", Image, self.image_callback, queue_size=1)
                 self.track_pub = rospy.Publisher("/thermal_yolo/tracked", Image, queue_size=1)
@@ -186,7 +191,6 @@ class yolo_tracker(object):
 
             self.fps_count += 1
             self.frame_count += 1
-
 ##            boxs = xyxy_to_xywh(transformed)#.astype(np.uint8)
 ##
             
@@ -198,7 +202,7 @@ class yolo_tracker(object):
             
             print("time for inference =>"+str(time.time()-step1))
             
-            features = encoder(self.show,boxs)
+            features = self.encoder(self.show,boxs)
             
             # score to 1.0 here).
             detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
