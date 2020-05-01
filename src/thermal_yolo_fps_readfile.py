@@ -198,9 +198,7 @@ class yolo_tracker(object):
             #boxs = xyxy_to_xywh(boxs)#.astype(np.uint8)
             boxs = xywh_to_xyxy(boxs)
             
-            print(boxs)
-            box_height = 
-            box_width  =            
+            print(boxs)         
 
             boxs[:,2] = (boxs[:,2] /yolo_filter_size) * width  #w
             boxs[:,3] = (boxs[:,3] /yolo_filter_size) * height #h
@@ -213,6 +211,12 @@ class yolo_tracker(object):
             # print("box_num",len(boxs))
             
             for bbox in boxs:
+
+                box_width  = bbox[2] - bbox[0]
+                box_height = bbox[3] - bbox[1]
+
+                bbox[0] = bbox[0] - int(box_width/2)
+                bbox[1] = bbox[1] - int(box_height/2)
                 
                 self.posid_array = Path()
             
