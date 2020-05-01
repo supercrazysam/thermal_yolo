@@ -36,8 +36,7 @@
 #include "softmax_layer.h"
 #include "utils.h"
 #include "upsample_layer.h"
-//#include "version.h"
-#include "/home/sam/catkin_ws/src/thermal_yolo/src/thermal_yolo/src/external_yolov3/darknet/src/version.h"
+#include "version.h"
 #include "yolo_layer.h"
 #include "gaussian_yolo_layer.h"
 
