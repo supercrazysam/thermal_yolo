@@ -122,9 +122,8 @@ class yolo_tracker(object):
                 rospy.init_node(node_name)
                 rospy.loginfo("Starting node " + str(node_name))
                 rospy.on_shutdown(self.cleanup)
-             
-                #self.image_sub = rospy.Subscriber("/blended/image", Image, self.image_callback, queue_size=1)
-                self.image_sub = rospy.Subscriber("/blended/image", Image, self.image_callback, queue_size=1)
+
+                self.image_sub = rospy.Subscriber("/thermal_yolo/image", Image, self.image_callback, queue_size=1)
                 self.track_pub = rospy.Publisher("/thermal_yolo/tracked", Image, queue_size=1)
                 self.posid_pub = rospy.Publisher("/thermal_yolo/person_num", Int32, queue_size=1)
                 self.bridge = CvBridge()
