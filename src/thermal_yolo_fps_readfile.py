@@ -57,10 +57,10 @@ darknet_image = darknet.make_image(darknet.network_width(netMain),
 
 ###########
 def convertBack(x, y, w, h):
-    xmin = int(round(x - (w / 2)))
-    xmax = int(round(x + (w / 2)))
-    ymin = int(round(y - (h / 2)))
-    ymax = int(round(y + (h / 2)))
+    xmin = int(np.round(x - (w / 2)))
+    xmax = int(np.round(x + (w / 2)))
+    ymin = int(np.round(y - (h / 2)))
+    ymax = int(np.round(y + (h / 2)))
     return xmin, ymin, xmax, ymax
 
 
@@ -83,6 +83,23 @@ def cvDrawBoxes(detections, img):
     return img
 
 ##########
+def xywh_to_xyxy(xywh):
+    """Convert [x1 y1 w h] box format to [x1 y1 x2 y2] format."""
+    if isinstance(xywh, (list, tuple)):
+        # Single box given as a list of coordinates
+        assert len(xywh) == 4
+        x1, y1 = xywh[0], xywh[1]
+        x2 = x1 + np.maximum(0., xywh[2] - 1.)
+        y2 = y1 + np.maximum(0., xywh[3] - 1.)
+        return (x1, y1, x2, y2)
+    elif isinstance(xywh, np.ndarray):
+        # Multiple boxes given as a 2D ndarray
+        return np.hstack(
+            (xywh[:, 0:2], xywh[:, 0:2] + np.maximum(0, xywh[:, 2:4] - 1))
+        )
+    else:
+        raise TypeError('Argument xywh must be a list, tuple, or numpy array.')
+
 
 def xyxy_to_xywh(xyxy):
     """Convert [x1 y1 x2 y2] box format to [x1 y1 w h] format."""
@@ -178,14 +195,18 @@ class yolo_tracker(object):
             self.fps_count += 1
             self.frame_count += 1
 
-##            boxs = xyxy_to_xywh(transformed)#.astype(np.uint8)
-##
+            #boxs = xyxy_to_xywh(boxs)#.astype(np.uint8)
+            boxs = xywh_to_xyxy(boxs)
             
+            print(boxs)
+            box_height = 
+            box_width  =            
+
             boxs[:,2] = (boxs[:,2] /yolo_filter_size) * width  #w
             boxs[:,3] = (boxs[:,3] /yolo_filter_size) * height #h
 
-            boxs[:,0] = (boxs[:,0] /yolo_filter_size) * width   - boxs[:,2]/2#x
-            boxs[:,1] = (boxs[:,1] /yolo_filter_size) * height  - boxs[:,3]/2#y
+            boxs[:,0] = (boxs[:,0] /yolo_filter_size) * width   #- boxs[:,2]/2#x
+            boxs[:,1] = (boxs[:,1] /yolo_filter_size) * height  #- boxs[:,3]/2#y
             
             print("time for inference =>"+str(time.time()-step1))
             #print(darknet.network_width(netMain),darknet.network_height(netMain)) #608 #608
