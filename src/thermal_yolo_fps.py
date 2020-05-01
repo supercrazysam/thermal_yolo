@@ -24,6 +24,7 @@ import cv2
 import numpy as np
 
 import external_yolov3.darknet.darknet as darknet 
+from tools import generate_detections as gdet
 
 warnings.filterwarnings('ignore')
 
