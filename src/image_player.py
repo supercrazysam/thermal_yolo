@@ -21,6 +21,7 @@ class image_converter:
         #self.camera = cv2.VideoCapture(0)
         #self.image_list = glob.glob("/home/sam/Downloads/FLIR_ADAS_1_3/train/Annotated_thermal_8_bit/*.jpeg")
         self.image_list = glob.glob("/root/Annotated_thermal_8_bit/*.jpeg")
+        self.rate = rospy.Rate(10)
     
 
 
@@ -32,6 +33,7 @@ class image_converter:
                 #print(image)
                 try:
                     self.image_pub.publish(self.bridge.cv2_to_imgmsg(image, "bgr8"))
+                    self.rate.sleep()
                 except CvBridgeError as e:
                     print(e)
         except KeyboardInterrupt:
@@ -44,5 +46,4 @@ class image_converter:
 
 x = image_converter()
 x.mainloop()
-
 
