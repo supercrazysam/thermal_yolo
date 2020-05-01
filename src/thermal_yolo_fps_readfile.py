@@ -25,12 +25,6 @@ import numpy as np
 
 import external_yolov3.darknet.darknet as darknet 
 
-from deep_sort import preprocessing
-from deep_sort import nn_matching
-from deep_sort.detection import Detection
-from deep_sort.tracker import Tracker
-from tools import generate_detections as gdet
-from deep_sort.detection import Detection as ddet
 warnings.filterwarnings('ignore')
 
 width = 640 #1280
