@@ -262,7 +262,6 @@ class yolo_tracker(object):
 
     def mainloop(self):
         while not rospy.is_shutdown():
-            msg=rospy.wait_for_message("/blended/image", Image)
             self.image_callback(msg)
 
 try:
