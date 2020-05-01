@@ -2,7 +2,7 @@ classes= 80
 train  = /home/pjreddie/data/coco/trainvalno5k.txt
 valid  = coco_testdev
 #valid = data/coco_val_5k.list
-names = /home/big/proj/robot_software/sam_test/src/yolo_tracker/src/external_yolov3/darknet/data/coco.names
+names = /home/sam/catkin_ws/src/thermal_yolo/src/thermal_yolo/src/external_yolov3/darknet/cfg/coco.names
 backup = /home/pjreddie/backup/
 eval=coco
 
