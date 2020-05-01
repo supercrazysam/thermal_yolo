@@ -14,7 +14,7 @@ class image_converter:
 
     def __init__(self):
         rospy.init_node('image_converter', anonymous=True)
-        self.image_pub = rospy.Publisher("image",Image,queue_size=1)
+        self.image_pub = rospy.Publisher("/thermal_yolo/image",Image,queue_size=1)
 
         self.bridge = CvBridge()
 
