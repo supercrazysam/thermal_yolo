@@ -199,7 +199,7 @@ class yolo_tracker(object):
                     cv2.rectangle(self.show, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
                 except ValueError:
                     break
-                cv2.putText(self.show, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
+                #cv2.putText(self.show, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
 
 
             # 显示实时FPS值
@@ -217,8 +217,6 @@ class yolo_tracker(object):
                 self.run_timer = time.time()
             run_time = time.time() - self.run_timer
             time_frame_label = '[Time:{0:.2f} | Frame:{1}]'.format(run_time, self.frame_count)
-            cv2.putText(self.show, time_frame_label, (5, height-15), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-            
             self.posid_pub.publish(Int32(data=len(boxes)))
             self.track_pub.publish(self.bridge.cv2_to_imgmsg(self.show, "bgr8"))
 
@@ -235,13 +233,13 @@ class yolo_tracker(object):
                     print("Shutting down openpose.")
                     rospy.signal_shutdown("ROSPy Shutdown")
 
-    def mainloop(self):
-        while not rospy.is_shutdown():
-            self.image_callback(msg)
+##    def mainloop(self):
+##        while not rospy.is_shutdown():
+##            pass
+##            #self.image_callback(msg)
 
 try:
     x=yolo_tracker()
-    x.mainloop()
-    #rospy.spin()
+    rospy.spin()
 except KeyboardInterrupt:
     print("Shutting down yolo.")

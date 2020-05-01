@@ -1,5 +1,6 @@
 <launch>
         <master auto="start"/>
         <param name="/use_sim_time" value="false"/>
+        <node pkg="thermal_yolo" type="image_player.py" name="image_reader" output="screen"/>
         <node pkg="thermal_yolo" type="thermal_yolo_fps_readfile.py" name="thermal_yolo" output="screen"/>
 </launch>
