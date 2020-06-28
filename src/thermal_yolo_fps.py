@@ -134,15 +134,18 @@ class yolo_tracker(object):
                 self.fps_count = 0
                 self.run_timer = 0
                 self.frame_count = 0
+                
+                self.camera = cv2.VideoCapture(0) #(512,640,3)
 
                 
 
 
                      
-    def image_callback(self,data):
-            self.show = self.convert_image(data)
-            self.time_header = data.header
+    def camera_loop(self,data):
+            
+            get, self.show = self.camera.read()
 
+            if not get: return
             if self.show is None: return
   
             # image = Image.fromarray(frame)
@@ -257,8 +260,7 @@ class yolo_tracker(object):
 
     def mainloop(self):
         while not rospy.is_shutdown():
-            msg=rospy.wait_for_message("/blended/image", Image)
-            self.image_callback(msg)
+            self.camera_loop(msg)
 
 try:
     x=yolo_tracker()
