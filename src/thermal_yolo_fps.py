@@ -24,7 +24,6 @@ import cv2
 import numpy as np
 
 import external_yolov3.darknet.darknet as darknet 
-from tools import generate_detections as gdet
 
 warnings.filterwarnings('ignore')
 
@@ -36,13 +35,6 @@ height= 512#720
 max_cosine_distance = 0.3
 nn_budget = None
 nms_max_overlap = 1.0
-
-# deep_sort 
-model_filename = '/home/big/Music/sam_test/src/yolo_tracker/src/model_data/mars-small128.pb'
-encoder = gdet.create_box_encoder(model_filename,batch_size=1)
-    
-metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-tracker = Tracker(metric ,max_iou_distance=0.1, max_age=30, n_init=3)
 
 ######## FAST YOLO wrapper
 import os
@@ -64,10 +56,10 @@ darknet_image = darknet.make_image(darknet.network_width(netMain),
 
 ###########
 def convertBack(x, y, w, h):
-    xmin = int(round(x - (w / 2)))
-    xmax = int(round(x + (w / 2)))
-    ymin = int(round(y - (h / 2)))
-    ymax = int(round(y + (h / 2)))
+    xmin = int(np.round(x - (w / 2)))
+    xmax = int(np.round(x + (w / 2)))
+    ymin = int(np.round(y - (h / 2)))
+    ymax = int(np.round(y + (h / 2)))
     return xmin, ymin, xmax, ymax
 
 
@@ -90,6 +82,23 @@ def cvDrawBoxes(detections, img):
     return img
 
 ##########
+def xywh_to_xyxy(xywh):
+    """Convert [x1 y1 w h] box format to [x1 y1 x2 y2] format."""
+    if isinstance(xywh, (list, tuple)):
+        # Single box given as a list of coordinates
+        assert len(xywh) == 4
+        x1, y1 = xywh[0], xywh[1]
+        x2 = x1 + np.maximum(0., xywh[2] - 1.)
+        y2 = y1 + np.maximum(0., xywh[3] - 1.)
+        return (x1, y1, x2, y2)
+    elif isinstance(xywh, np.ndarray):
+        # Multiple boxes given as a 2D ndarray
+        return np.hstack(
+            (xywh[:, 0:2], xywh[:, 0:2] + np.maximum(0, xywh[:, 2:4] - 1))
+        )
+    else:
+        raise TypeError('Argument xywh must be a list, tuple, or numpy array.')
+
 
 def xyxy_to_xywh(xyxy):
     """Convert [x1 y1 x2 y2] box format to [x1 y1 w h] format."""
@@ -187,42 +196,36 @@ class yolo_tracker(object):
 
             self.fps_count += 1
             self.frame_count += 1
-
-##            boxs = xyxy_to_xywh(transformed)#.astype(np.uint8)
-##
+#boxs = xyxy_to_xywh(boxs)#.astype(np.uint8)
+            boxs = xywh_to_xyxy(boxs)
             
+            print(boxs)         
+
             boxs[:,2] = (boxs[:,2] /yolo_filter_size) * width  #w
             boxs[:,3] = (boxs[:,3] /yolo_filter_size) * height #h
 
-            boxs[:,0] = (boxs[:,0] /yolo_filter_size) * width   - boxs[:,2]/2#x
-            boxs[:,1] = (boxs[:,1] /yolo_filter_size) * height  - boxs[:,3]/2#y
+            boxs[:,0] = (boxs[:,0] /yolo_filter_size) * width   #- boxs[:,2]/2#x
+            boxs[:,1] = (boxs[:,1] /yolo_filter_size) * height  #- boxs[:,3]/2#y
             
             print("time for inference =>"+str(time.time()-step1))
             #print(darknet.network_width(netMain),darknet.network_height(netMain)) #608 #608
             # print("box_num",len(boxs))
-            features = encoder(self.show,boxs)
             
-            # score to 1.0 here).
-            detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
-            
-            # Run non-maxima suppression.
-            boxes = np.array([d.tlwh for d in detections])
-            scores = np.array([d.confidence for d in detections])
-            indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
-            detections = [detections[i] for i in indices]
-            
-            for track in tracker.tracks:
-                if not track.is_confirmed() or track.time_since_update > 1:
-                    continue
+            for bbox in boxs:
+
+                box_width  = bbox[2] - bbox[0]
+                box_height = bbox[3] - bbox[1]
+
+                bbox[0] = bbox[0] - int(box_width/2)
+                bbox[1] = bbox[1] - int(box_height/2)
                 
                 self.posid_array = Path()
-                
-                bbox = track.to_tlbr()
+            
                 try:
                     cv2.rectangle(self.show, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
                 except ValueError:
                     break
-                cv2.putText(self.show, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
+                #cv2.putText(self.show, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
 
 
             # 显示实时FPS值
@@ -231,7 +234,7 @@ class yolo_tracker(object):
                 self.realtime_fps = self.fps_count / (time.time() - self.start_time)
                 self.fps_count = 0  # 帧数清零
                 self.start_time = time.time()
-            fps_label = 'FPS:{0:.2f}'.format(self.realtime_fps)
+            fps_label = "FPS:"+str(self.realtime_fps)
             cv2.putText(self.show, fps_label, (width-160, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
 
 
@@ -239,10 +242,8 @@ class yolo_tracker(object):
             if self.frame_count == 1:
                 self.run_timer = time.time()
             run_time = time.time() - self.run_timer
-            time_frame_label = '[Time:{0:.2f} | Frame:{1}]'.format(run_time, self.frame_count)
-            cv2.putText(self.show, time_frame_label, (5, height-15), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-            
-            self.posid_pub.publish(Int32(data=len(boxes)))
+            time_frame_label = "Frame:"+str(self.frame_count)
+            self.posid_pub.publish(Int32(data=len(boxs)))
             self.track_pub.publish(self.bridge.cv2_to_imgmsg(self.show, "bgr8"))
 
 
