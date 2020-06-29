@@ -172,7 +172,9 @@ class yolo_tracker(object):
 
             #boxs should receive in format similar to  [[584, 268, 160, 316]]
 
-            if detections is None: return
+            if detections is None: 
+                print("No human in sight!")
+                return
 ##            image = cvDrawBoxes(detections, frame_resized)
 ##            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 ##            cv2.imshow('Demo', image)
@@ -180,8 +182,14 @@ class yolo_tracker(object):
 
             
             detections = np.array(detections)
-            detections = detections[ np.where( detections[:,0]==b'person' ) ]
-            if detections is None: return
+            try:
+                detections = detections[ np.where( detections[:,0]==b'person' ) ]
+            except:
+                print("No human in sight!")
+                return
+            if detections is None: 
+                print("No human in sight!")
+                return
             #print("detections",detections)
 
             if len(detections)==0: return
