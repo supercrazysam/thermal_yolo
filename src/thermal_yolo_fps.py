@@ -150,7 +150,7 @@ class yolo_tracker(object):
 
 
                      
-    def camera_loop(self,data):
+    def camera_loop(self):
             
             get, self.show = self.camera.read()
 
@@ -261,7 +261,7 @@ class yolo_tracker(object):
 
     def mainloop(self):
         while not rospy.is_shutdown():
-            self.camera_loop(msg)
+            self.camera_loop()
 
 try:
     x=yolo_tracker()
