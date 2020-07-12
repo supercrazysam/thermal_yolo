@@ -1,0 +1,1 @@
+./darknet detector train cfg/coco_accel.data cfg/yolo-obj.cfg yolov4-tiny.conv.29
