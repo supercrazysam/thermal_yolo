@@ -40,9 +40,9 @@ nms_max_overlap = 1.0
 import os
 cwd = os.path.dirname(__file__)
 print(cwd)
-configPath = cwd+"/external_yolov4/darknet/cfg/yolov4.cfg"
-weightPath = cwd+"/external_yolov4/darknet/yolo-obj.weights"
-metaPath   = cwd+"/external_yolov4/darknet/cfg/coco_accel.data"
+configPath = cwd+"/external_yolov4/darknet/yolov4_thermal.cfg"
+weightPath = cwd+"/external_yolov4/darknet/yolov4_thermal.weights"
+metaPath   = cwd+"/external_yolov4/darknet/cfg/coco_yolov4_thermal.data"
     
 netMain = darknet.load_net_custom(configPath.encode(
             "ascii"), weightPath.encode("ascii"), 0, 1)  # batch size = 1
