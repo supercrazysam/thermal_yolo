@@ -23,7 +23,7 @@ import warnings
 import cv2
 import numpy as np
 
-import external_yolov3.darknet.darknet as darknet 
+import external_yolov4.darknet.darknet as darknet 
 
 warnings.filterwarnings('ignore')
 
