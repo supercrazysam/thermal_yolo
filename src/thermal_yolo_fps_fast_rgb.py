@@ -27,8 +27,8 @@ import external_yolov4.darknet.darknet as darknet
 
 warnings.filterwarnings('ignore')
 
-width = 640#1280
-height= 512#720
+width = 640 #1280
+height= 480 #720
 
 #YOLO
 # Definition of the parameters
@@ -144,6 +144,8 @@ class yolo_tracker(object):
                 self.frame_count = 0
                 
                 self.camera = cv2.VideoCapture(0) #(512,640,3)
+                self.camera.set(3, 640)
+                self.camera.set(4, 480)
 
                 
 
